@@ -13,19 +13,20 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
 import reporte.atlantida.control.Control;
 import reporte.atlantida.control.Proceso;
 import reporte.atlantida.data.Query;
+import reporte.atlantida.envio.FTP;
 import reporte.atlantida.estructura.Empresa;
 import reporte.atlantida.estructura.Reporte;
+import reporte.atlantida.estructura.ReporteAtlantidaExcepcion;
 import reporte.atlantida.estructura.Servicio;
 import reporte.atlantida.fichero.Archivo;
 import reporte.atlantida.manual.control.Controlador;
@@ -131,46 +132,29 @@ public class Vista extends javax.swing.JFrame {
      * Rederización de tablas.
      */
     private void renderizar() {
+                
+        Render render = new Render(0, "null", false); //Default
 
-        //******************* Tabla Reporte *******************//
-        //Cabezera
-        TableCellRenderer renderHeaderReporte = this.jTableReporte.getTableHeader().getDefaultRenderer();
-        JLabel headerLabelReporte = (JLabel) renderHeaderReporte;
-        headerLabelReporte.setHorizontalAlignment(JLabel.CENTER);
+        //******************* Tabla Reporte *******************//        
+        this.jTableReporte.setDefaultRenderer(Object.class, new Render(8, "A", true));
 
-        //Celdas
-        Render renderReporte = new Render(8, "A");
-        this.jTableReporte.setDefaultRenderer(Object.class, renderReporte);
-
+        //******************* Tabla VerServicio *******************//
+        this.jTableVerServicio.setDefaultRenderer(Object.class, new Render(3, "A", true));
+        
+        //******************* Tabla VerArchivo *******************//
+        this.jTableVerArchivo.setDefaultRenderer(Object.class, render);
+        
         //******************* Tabla EditarCorreoServicio *******************//
-        //Cabezera
-        TableCellRenderer renderHeaderEditarCorreoServicio = this.jTableEditarCorreoServicio.getTableHeader().getDefaultRenderer();
-        JLabel headerLabelEditarCorreoServicio = (JLabel) renderHeaderEditarCorreoServicio;
-        headerLabelEditarCorreoServicio.setHorizontalAlignment(JLabel.CENTER);
+        this.jTableEditarCorreoServicio.setDefaultRenderer(Object.class, new Render(3, Boolean.TRUE, true));
 
-        //Celdas
-        Render renderEditarCorreoServicio = new Render(3, "A");
-        this.jTableEditarCorreoServicio.setDefaultRenderer(Object.class, renderEditarCorreoServicio);
-
-        //******************* Tabla EditarCorreoServicioEmpresa *******************//
-        //Cabezera
-        TableCellRenderer renderHeaderEditarCorreoServicioEmpresa = this.jTableEditarCorreoEmpresaServicio.getTableHeader().getDefaultRenderer();
-        JLabel headerLabelEditarCorreoServicioEmpresa = (JLabel) renderHeaderEditarCorreoServicioEmpresa;
-        headerLabelEditarCorreoServicioEmpresa.setHorizontalAlignment(JLabel.CENTER);
-
-        //Celdas
-        Render renderEditarCorreoServicioEmpresa = new Render(1, "A");
-        this.jTableEditarCorreoEmpresaServicio.setDefaultRenderer(Object.class, renderEditarCorreoServicioEmpresa);
-
-        //******************* Tabla EmpresaServicio *******************//
-        //Cabezera
-        TableCellRenderer renderHeaderEmpresaServicio = this.jTableEmpresaServicio.getTableHeader().getDefaultRenderer();
-        JLabel headerLabelEmpresaServicio = (JLabel) renderHeaderEmpresaServicio;
-        headerLabelEmpresaServicio.setHorizontalAlignment(JLabel.CENTER);
-
-        //Celdas
-        //Render renderEmpresaServicio = new Render(1, "A");
-        //this.jTableEmpresaServicio.setDefaultRenderer(Object.class, renderEmpresaServicio);
+        //******************* Tabla EditarCorreoServicioEmpresa *******************//        
+        this.jTableEditarCorreoEmpresaServicio.setDefaultRenderer(Object.class, render);
+        
+        //******************* Tabla ContingenciaServicio *******************//        
+        this.jTableContingenciaServicio.setDefaultRenderer(Object.class, render);
+        
+        //******************* Tabla EmpresaServicio *******************//        
+        this.jTableEmpresaServicio.setDefaultRenderer(Object.class, render);
     }
 
     /**
@@ -194,7 +178,6 @@ public class Vista extends javax.swing.JFrame {
         buttonGroupContingenciaArchivo = new javax.swing.ButtonGroup();
         buttonGroupContingenciaEnvio = new javax.swing.ButtonGroup();
         buttonGroupContingenciaInformacion = new javax.swing.ButtonGroup();
-        jPanelContenedor = new javax.swing.JPanel();
         jPanelEncabezado = new javax.swing.JPanel();
         jPanelLogo = new javax.swing.JPanel();
         jLabelLogo = new javax.swing.JLabel();
@@ -204,19 +187,17 @@ public class Vista extends javax.swing.JFrame {
         jButtonReporte = new javax.swing.JButton();
         jButtonContingencia = new javax.swing.JButton();
         jButtonEmpresa = new javax.swing.JButton();
-        jButtonAyuda = new javax.swing.JButton();
         jButtonConfiguracion = new javax.swing.JButton();
+        jButtonAyuda = new javax.swing.JButton();
         jPanelCuerpo = new javax.swing.JPanel();
         jPanelReporte = new javax.swing.JPanel();
         jScrollPaneReporte = new javax.swing.JScrollPane();
         jTableReporte = new javax.swing.JTable();
         jPanelVer = new javax.swing.JPanel();
+        jPanelVerEncabezado = new javax.swing.JPanel();
         jLabelVerEmpresa = new javax.swing.JLabel();
-        jPanelVerArchivo = new javax.swing.JPanel();
-        jLabelVerDirectorio = new javax.swing.JLabel();
-        jScrollPaneVerArchivo = new javax.swing.JScrollPane();
-        jTableVerArchivo = new javax.swing.JTable();
-        jLabelVerTextDirectorio = new javax.swing.JLabel();
+        jSeparatorVer = new javax.swing.JSeparator();
+        jPanelVerCuerpo = new javax.swing.JPanel();
         jPanelVerInfo = new javax.swing.JPanel();
         jLabelTextID = new javax.swing.JLabel();
         jLabelID = new javax.swing.JLabel();
@@ -240,9 +221,13 @@ public class Vista extends javax.swing.JFrame {
         jLabelContenido = new javax.swing.JLabel();
         jLabelTextDestino = new javax.swing.JLabel();
         jLabelDestino = new javax.swing.JLabel();
-        jSeparatorVer = new javax.swing.JSeparator();
         jScrollPaneVerServicio = new javax.swing.JScrollPane();
         jTableVerServicio = new javax.swing.JTable();
+        jPanelVerArchivo = new javax.swing.JPanel();
+        jLabelVerTextDirectorio = new javax.swing.JLabel();
+        jLabelVerDirectorio = new javax.swing.JLabel();
+        jScrollPaneVerArchivo = new javax.swing.JScrollPane();
+        jTableVerArchivo = new javax.swing.JTable();
         jPanelEditar = new javax.swing.JPanel();
         jPanelEditarEncabezado = new javax.swing.JPanel();
         jLabelEditarEmpresa = new javax.swing.JLabel();
@@ -252,6 +237,8 @@ public class Vista extends javax.swing.JFrame {
         jLabelEditarDestino = new javax.swing.JLabel();
         jLabelTextEditarEnvio = new javax.swing.JLabel();
         jLabelEditarEnvio = new javax.swing.JLabel();
+        jLabelTextEditarPeticion = new javax.swing.JLabel();
+        jLabelEditarPeticion = new javax.swing.JLabel();
         jPanelEditarCuerpo = new javax.swing.JPanel();
         jPanelEditarCuerpoCorreoDefinido = new javax.swing.JPanel();
         jLabelCorreoDefinido = new javax.swing.JLabel();
@@ -276,9 +263,17 @@ public class Vista extends javax.swing.JFrame {
         jPanelCorreoEmpresaServicioEnvio = new javax.swing.JPanel();
         jButtonReintentarCorreoEmpresaServicio = new javax.swing.JButton();
         jPanelEditarCuerpoFTP = new javax.swing.JPanel();
-        jLabelFTP = new javax.swing.JLabel();
-        jPanelCorreoFTPEnvio = new javax.swing.JPanel();
+        jLabelFTPServidor = new javax.swing.JLabel();
+        jTextFieldFTPServidor = new javax.swing.JTextField();
+        jLabelFTPDirectorio = new javax.swing.JLabel();
+        jTextFieldFTPDirectorio = new javax.swing.JTextField();
+        jLabelFTPUsuario = new javax.swing.JLabel();
+        jTextFieldUsuario = new javax.swing.JTextField();
+        jLabelFTPClave = new javax.swing.JLabel();
+        jTextFieldClave = new javax.swing.JTextField();
+        jPanelFTPEnvio = new javax.swing.JPanel();
         jButtonReintentarFTP = new javax.swing.JButton();
+        jLabelFTPAyuda = new javax.swing.JLabel();
         jPanelContingencia = new javax.swing.JPanel();
         jPanelContingenciaFecha = new javax.swing.JPanel();
         jDateChooserContingenciaDesde = new com.toedter.calendar.JDateChooser();
@@ -305,10 +300,10 @@ public class Vista extends javax.swing.JFrame {
         jPanelEmpresaComboBox = new javax.swing.JPanel();
         jComboEmpresaBoxEmpresa = new javax.swing.JComboBox<>();
         jLabelEmpresaIBS = new javax.swing.JLabel();
-        jScrollPaneEmpresaServicio = new javax.swing.JScrollPane();
-        jTableEmpresaServicio = new javax.swing.JTable();
         jScrollPaneEmpresaCorreo = new javax.swing.JScrollPane();
         jTextPaneEmpresaCorreo = new javax.swing.JTextPane();
+        jScrollPaneEmpresaServicio = new javax.swing.JScrollPane();
+        jTableEmpresaServicio = new javax.swing.JTable();
         jPanelEmpresaInformacion = new javax.swing.JPanel();
         jLabelTextEmpresaVersionPago = new javax.swing.JLabel();
         jLabelEmpresaVersionPago = new javax.swing.JLabel();
@@ -335,6 +330,11 @@ public class Vista extends javax.swing.JFrame {
         jLabelConfiguracionProducto = new javax.swing.JLabel();
         jLabelTextConfiguracionDirectorioExterno = new javax.swing.JLabel();
         jLabelConfiguracionDirectorioExterno = new javax.swing.JLabel();
+        jPanelConfiguracionDoc = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         reporteMenuItem = new javax.swing.JMenuItem();
@@ -348,11 +348,8 @@ public class Vista extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Reporte Atlántida");
         setBackground(new java.awt.Color(255, 255, 255));
-        setResizable(false);
-
-        jPanelContenedor.setBackground(new java.awt.Color(255, 255, 255));
-        jPanelContenedor.setPreferredSize(new java.awt.Dimension(1100, 719));
-        jPanelContenedor.setLayout(new java.awt.BorderLayout(2, 2));
+        setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        getContentPane().setLayout(new java.awt.BorderLayout(1, 2));
 
         jPanelEncabezado.setBackground(new java.awt.Color(255, 255, 255));
         jPanelEncabezado.setLayout(new java.awt.BorderLayout());
@@ -374,7 +371,7 @@ public class Vista extends javax.swing.JFrame {
 
         jPanelEncabezado.add(jPanelDescripsion, java.awt.BorderLayout.PAGE_END);
 
-        jPanelContenedor.add(jPanelEncabezado, java.awt.BorderLayout.PAGE_START);
+        getContentPane().add(jPanelEncabezado, java.awt.BorderLayout.PAGE_START);
 
         jPanelMenu.setBackground(new java.awt.Color(255, 255, 255));
         jPanelMenu.setLayout(new java.awt.GridLayout(5, 1));
@@ -384,7 +381,6 @@ public class Vista extends javax.swing.JFrame {
         jButtonReporte.setForeground(new java.awt.Color(227, 30, 48));
         jButtonReporte.setIcon(new javax.swing.ImageIcon(getClass().getResource("/reporte/atlantida/manual/utilitario/imagen/formulario-chequeado.png"))); // NOI18N
         jButtonReporte.setText("Reportes");
-        jButtonReporte.setBorder(null);
         jButtonReporte.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jButtonReporte.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jButtonReporte.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -418,18 +414,6 @@ public class Vista extends javax.swing.JFrame {
         });
         jPanelMenu.add(jButtonEmpresa);
 
-        jButtonAyuda.setBackground(new java.awt.Color(255, 255, 255));
-        jButtonAyuda.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jButtonAyuda.setForeground(new java.awt.Color(227, 30, 48));
-        jButtonAyuda.setIcon(new javax.swing.ImageIcon(getClass().getResource("/reporte/atlantida/manual/utilitario/imagen/informacion (1).png"))); // NOI18N
-        jButtonAyuda.setText("Ayuda");
-        jButtonAyuda.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jButtonAyudaMouseClicked(evt);
-            }
-        });
-        jPanelMenu.add(jButtonAyuda);
-
         jButtonConfiguracion.setBackground(new java.awt.Color(255, 255, 255));
         jButtonConfiguracion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
         jButtonConfiguracion.setForeground(new java.awt.Color(227, 30, 48));
@@ -442,7 +426,20 @@ public class Vista extends javax.swing.JFrame {
         });
         jPanelMenu.add(jButtonConfiguracion);
 
-        jPanelContenedor.add(jPanelMenu, java.awt.BorderLayout.LINE_START);
+        jButtonAyuda.setBackground(new java.awt.Color(255, 255, 255));
+        jButtonAyuda.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jButtonAyuda.setForeground(new java.awt.Color(227, 30, 48));
+        jButtonAyuda.setIcon(new javax.swing.ImageIcon(getClass().getResource("/reporte/atlantida/manual/utilitario/imagen/informacion (1).png"))); // NOI18N
+        jButtonAyuda.setText("Ayuda");
+        jButtonAyuda.setEnabled(false);
+        jButtonAyuda.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jButtonAyudaMouseClicked(evt);
+            }
+        });
+        jPanelMenu.add(jButtonAyuda);
+
+        getContentPane().add(jPanelMenu, java.awt.BorderLayout.LINE_START);
 
         jPanelCuerpo.setBackground(new java.awt.Color(255, 255, 255));
         jPanelCuerpo.setLayout(new java.awt.CardLayout());
@@ -453,6 +450,7 @@ public class Vista extends javax.swing.JFrame {
         jScrollPaneReporte.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPaneReporte.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Lista de reportes", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 18), new java.awt.Color(102, 102, 102))); // NOI18N
 
+        jTableReporte.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         jTableReporte.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -469,9 +467,7 @@ public class Vista extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTableReporte.setGridColor(new java.awt.Color(204, 204, 204));
-        jTableReporte.setIntercellSpacing(new java.awt.Dimension(1, 2));
-        jTableReporte.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableReporte.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableReporte.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jTableReporte.getTableHeader().setReorderingAllowed(false);
         jTableReporte.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -500,74 +496,39 @@ public class Vista extends javax.swing.JFrame {
 
         jPanelVer.setBackground(new java.awt.Color(255, 255, 255));
 
+        jPanelVerEncabezado.setBackground(new java.awt.Color(255, 255, 255));
+
         jLabelVerEmpresa.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         jLabelVerEmpresa.setForeground(new java.awt.Color(227, 30, 48));
         jLabelVerEmpresa.setText("Nombre de la empresa");
         jLabelVerEmpresa.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
 
-        jPanelVerArchivo.setBackground(new java.awt.Color(255, 255, 255));
-        jPanelVerArchivo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Archivos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 18), java.awt.Color.darkGray)); // NOI18N
+        jSeparatorVer.setForeground(new java.awt.Color(102, 102, 102));
 
-        jLabelVerDirectorio.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
-        jLabelVerDirectorio.setText("Carpeta");
-
-        jTableVerArchivo.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "#", "Archivo", "Generado", "Enviado"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Boolean.class
-            };
-            boolean[] canEdit = new boolean [] {
-                false, false, false, false
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
-            }
-        });
-        jTableVerArchivo.setGridColor(new java.awt.Color(255, 255, 255));
-        jTableVerArchivo.setSelectionBackground(new java.awt.Color(255, 255, 204));
-        jTableVerArchivo.setSelectionForeground(new java.awt.Color(0, 0, 0));
-        jScrollPaneVerArchivo.setViewportView(jTableVerArchivo);
-
-        jLabelVerTextDirectorio.setFont(new java.awt.Font("Arial", 1, 13)); // NOI18N
-        jLabelVerTextDirectorio.setText("Directorio: ");
-
-        javax.swing.GroupLayout jPanelVerArchivoLayout = new javax.swing.GroupLayout(jPanelVerArchivo);
-        jPanelVerArchivo.setLayout(jPanelVerArchivoLayout);
-        jPanelVerArchivoLayout.setHorizontalGroup(
-            jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPaneVerArchivo)
-                    .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
-                        .addComponent(jLabelVerTextDirectorio)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabelVerDirectorio)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+        javax.swing.GroupLayout jPanelVerEncabezadoLayout = new javax.swing.GroupLayout(jPanelVerEncabezado);
+        jPanelVerEncabezado.setLayout(jPanelVerEncabezadoLayout);
+        jPanelVerEncabezadoLayout.setHorizontalGroup(
+            jPanelVerEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelVerEncabezadoLayout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addGroup(jPanelVerEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelVerEncabezadoLayout.createSequentialGroup()
+                        .addComponent(jLabelVerEmpresa)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jSeparatorVer))
                 .addContainerGap())
         );
-        jPanelVerArchivoLayout.setVerticalGroup(
-            jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelVerTextDirectorio)
-                    .addComponent(jLabelVerDirectorio))
+        jPanelVerEncabezadoLayout.setVerticalGroup(
+            jPanelVerEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelVerEncabezadoLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabelVerEmpresa)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPaneVerArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jSeparatorVer, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        jPanelVerCuerpo.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelVerCuerpo.setLayout(new java.awt.GridLayout(1, 2, 5, 5));
 
         jPanelVerInfo.setBackground(new java.awt.Color(255, 255, 255));
         jPanelVerInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Información", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 18), java.awt.Color.darkGray)); // NOI18N
@@ -673,7 +634,7 @@ public class Vista extends javax.swing.JFrame {
         jLabelDestino.setText("Destino");
         jPanelVerInfo.add(jLabelDestino);
 
-        jSeparatorVer.setForeground(new java.awt.Color(102, 102, 102));
+        jPanelVerCuerpo.add(jPanelVerInfo);
 
         jScrollPaneVerServicio.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPaneVerServicio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Servicios", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 18), java.awt.Color.darkGray)); // NOI18N
@@ -703,41 +664,104 @@ public class Vista extends javax.swing.JFrame {
             }
         });
         jTableVerServicio.setGridColor(new java.awt.Color(255, 255, 255));
-        jTableVerServicio.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableVerServicio.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableVerServicio.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPaneVerServicio.setViewportView(jTableVerServicio);
+
+        jPanelVerCuerpo.add(jScrollPaneVerServicio);
+
+        jPanelVerArchivo.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelVerArchivo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Archivos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 18), java.awt.Color.darkGray)); // NOI18N
+
+        jLabelVerTextDirectorio.setFont(new java.awt.Font("Arial", 1, 13)); // NOI18N
+        jLabelVerTextDirectorio.setText("Directorio: ");
+
+        jLabelVerDirectorio.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
+        jLabelVerDirectorio.setText("Carpeta");
+
+        jTableVerArchivo.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "#", "Archivo", "Generado", "Enviado"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Boolean.class
+            };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jTableVerArchivo.setGridColor(new java.awt.Color(255, 255, 255));
+        jTableVerArchivo.setSelectionBackground(new java.awt.Color(204, 204, 204));
+        jTableVerArchivo.setSelectionForeground(new java.awt.Color(0, 0, 0));
+        jScrollPaneVerArchivo.setViewportView(jTableVerArchivo);
+        if (jTableVerArchivo.getColumnModel().getColumnCount() > 0) {
+            jTableVerArchivo.getColumnModel().getColumn(0).setPreferredWidth(5);
+            jTableVerArchivo.getColumnModel().getColumn(1).setPreferredWidth(60);
+            jTableVerArchivo.getColumnModel().getColumn(2).setPreferredWidth(10);
+            jTableVerArchivo.getColumnModel().getColumn(3).setPreferredWidth(10);
+        }
+
+        javax.swing.GroupLayout jPanelVerArchivoLayout = new javax.swing.GroupLayout(jPanelVerArchivo);
+        jPanelVerArchivo.setLayout(jPanelVerArchivoLayout);
+        jPanelVerArchivoLayout.setHorizontalGroup(
+            jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPaneVerArchivo, javax.swing.GroupLayout.DEFAULT_SIZE, 786, Short.MAX_VALUE)
+                    .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
+                        .addComponent(jLabelVerTextDirectorio)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabelVerDirectorio)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanelVerArchivoLayout.setVerticalGroup(
+            jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelVerArchivoLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanelVerArchivoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelVerTextDirectorio)
+                    .addComponent(jLabelVerDirectorio))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPaneVerArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(37, 37, 37))
+        );
 
         javax.swing.GroupLayout jPanelVerLayout = new javax.swing.GroupLayout(jPanelVer);
         jPanelVer.setLayout(jPanelVerLayout);
         jPanelVerLayout.setHorizontalGroup(
             jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelVerLayout.createSequentialGroup()
-                .addGap(79, 79, 79)
-                .addGroup(jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelVerEmpresa)
-                    .addGroup(jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addGroup(jPanelVerLayout.createSequentialGroup()
-                            .addComponent(jPanelVerInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(jScrollPaneVerServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 475, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jPanelVerArchivo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jSeparatorVer)))
-                .addGap(93, 93, 93))
+                .addGap(58, 58, 58)
+                .addGroup(jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanelVerArchivo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanelVerCuerpo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(jPanelVerEncabezado, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(55, 55, 55))
         );
         jPanelVerLayout.setVerticalGroup(
             jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelVerLayout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addComponent(jLabelVerEmpresa)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jSeparatorVer, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(23, 23, 23)
+                .addComponent(jPanelVerEncabezado, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(30, 30, 30)
+                .addComponent(jPanelVerCuerpo, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addGroup(jPanelVerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanelVerInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPaneVerServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(jPanelVerArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jPanelVerArchivo, javax.swing.GroupLayout.PREFERRED_SIZE, 210, Short.MAX_VALUE)
+                .addGap(22, 22, 22))
         );
 
         jPanelCuerpo.add(jPanelVer, "Ver");
@@ -756,47 +780,63 @@ public class Vista extends javax.swing.JFrame {
         jSeparatorEditar.setForeground(new java.awt.Color(102, 102, 102));
 
         jPanelEditarInfo.setBackground(new java.awt.Color(255, 255, 255));
-        jPanelEditarInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Información", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 12), java.awt.Color.darkGray)); // NOI18N
+        jPanelEditarInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Información", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 15), java.awt.Color.darkGray)); // NOI18N
 
-        jLabelTextEditarDestino.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
-        jLabelTextEditarDestino.setText("Destino: ");
+        jLabelTextEditarDestino.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelTextEditarDestino.setText("Destino:");
 
-        jLabelEditarDestino.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelEditarDestino.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelEditarDestino.setText("Destino");
 
-        jLabelTextEditarEnvio.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextEditarEnvio.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextEditarEnvio.setText("Envió:");
 
-        jLabelEditarEnvio.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelEditarEnvio.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelEditarEnvio.setText("Envió");
+
+        jLabelTextEditarPeticion.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelTextEditarPeticion.setText("Petición:");
+
+        jLabelEditarPeticion.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        jLabelEditarPeticion.setText("Petición");
 
         javax.swing.GroupLayout jPanelEditarInfoLayout = new javax.swing.GroupLayout(jPanelEditarInfo);
         jPanelEditarInfo.setLayout(jPanelEditarInfoLayout);
         jPanelEditarInfoLayout.setHorizontalGroup(
             jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEditarInfoLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabelTextEditarEnvio)
-                    .addComponent(jLabelTextEditarDestino))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabelEditarEnvio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabelEditarDestino, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE))
-                .addGap(130, 130, 130))
+                .addContainerGap()
+                .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(jPanelEditarInfoLayout.createSequentialGroup()
+                        .addComponent(jLabelTextEditarPeticion)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabelEditarPeticion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanelEditarInfoLayout.createSequentialGroup()
+                        .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabelTextEditarEnvio)
+                            .addComponent(jLabelTextEditarDestino))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jLabelEditarEnvio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabelEditarDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(90, Short.MAX_VALUE))
         );
         jPanelEditarInfoLayout.setVerticalGroup(
             jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelEditarInfoLayout.createSequentialGroup()
-                .addContainerGap()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelEditarInfoLayout.createSequentialGroup()
+                .addGap(14, 14, 14)
+                .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextEditarPeticion)
+                    .addComponent(jLabelEditarPeticion))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelTextEditarDestino)
                     .addComponent(jLabelEditarDestino))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanelEditarInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelTextEditarEnvio)
-                    .addComponent(jLabelEditarEnvio))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabelEditarEnvio)
+                    .addComponent(jLabelTextEditarEnvio))
+                .addGap(14, 14, 14))
         );
 
         javax.swing.GroupLayout jPanelEditarEncabezadoLayout = new javax.swing.GroupLayout(jPanelEditarEncabezado);
@@ -804,18 +844,14 @@ public class Vista extends javax.swing.JFrame {
         jPanelEditarEncabezadoLayout.setHorizontalGroup(
             jPanelEditarEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEditarEncabezadoLayout.createSequentialGroup()
+                .addGap(33, 33, 33)
                 .addGroup(jPanelEditarEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanelEditarInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSeparatorEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanelEditarEncabezadoLayout.createSequentialGroup()
-                        .addGap(33, 33, 33)
-                        .addGroup(jPanelEditarEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSeparatorEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 740, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(jPanelEditarEncabezadoLayout.createSequentialGroup()
-                                .addGap(8, 8, 8)
-                                .addComponent(jLabelEditarEmpresa))))
-                    .addGroup(jPanelEditarEncabezadoLayout.createSequentialGroup()
-                        .addGap(45, 45, 45)
-                        .addComponent(jPanelEditarInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 334, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(173, Short.MAX_VALUE))
+                        .addGap(8, 8, 8)
+                        .addComponent(jLabelEditarEmpresa)))
+                .addContainerGap(146, Short.MAX_VALUE))
         );
         jPanelEditarEncabezadoLayout.setVerticalGroup(
             jPanelEditarEncabezadoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -826,7 +862,7 @@ public class Vista extends javax.swing.JFrame {
                 .addComponent(jSeparatorEditar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jPanelEditarInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         jPanelEditar.add(jPanelEditarEncabezado, java.awt.BorderLayout.PAGE_START);
@@ -892,7 +928,7 @@ public class Vista extends javax.swing.JFrame {
                     .addComponent(jPanelCorreoDefinidoEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelCorreoDefinido)
                     .addComponent(jPanelCorreoDefinidoLista, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(395, Short.MAX_VALUE))
+                .addContainerGap(368, Short.MAX_VALUE))
         );
         jPanelEditarCuerpoCorreoDefinidoLayout.setVerticalGroup(
             jPanelEditarCuerpoCorreoDefinidoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -901,9 +937,9 @@ public class Vista extends javax.swing.JFrame {
                 .addComponent(jLabelCorreoDefinido)
                 .addGap(18, 18, 18)
                 .addComponent(jPanelCorreoDefinidoLista, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(36, 36, 36)
+                .addGap(18, 18, 18)
                 .addComponent(jPanelCorreoDefinidoEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         jPanelEditarCuerpo.add(jPanelEditarCuerpoCorreoDefinido, "CorreoDefinido");
@@ -924,16 +960,24 @@ public class Vista extends javax.swing.JFrame {
                 "Servicio", "Descripción", "Correos", "Enviado", "Editar Correos"
             }
         ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Boolean.class, java.lang.Object.class
+            };
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, false
             };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        jTableEditarCorreoServicio.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableEditarCorreoServicio.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableEditarCorreoServicio.setSelectionForeground(new java.awt.Color(0, 0, 0));
+        jTableEditarCorreoServicio.getTableHeader().setReorderingAllowed(false);
         jTableEditarCorreoServicio.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTableEditarCorreoServicioMouseClicked(evt);
@@ -989,7 +1033,7 @@ public class Vista extends javax.swing.JFrame {
                     .addComponent(jPanelCorreoServicioEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabelEditarCorreoServicio)
                     .addComponent(jScrollPaneEditarCorreoServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 869, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanelEditarCuerpoCorreoServicioLayout.setVerticalGroup(
             jPanelEditarCuerpoCorreoServicioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1000,7 +1044,7 @@ public class Vista extends javax.swing.JFrame {
                 .addComponent(jScrollPaneEditarCorreoServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32)
                 .addComponent(jPanelCorreoServicioEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanelEditarCuerpo.add(jPanelEditarCuerpoCorreoServicio, "CorreoServicio");
@@ -1039,8 +1083,9 @@ public class Vista extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTableEditarCorreoEmpresaServicio.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableEditarCorreoEmpresaServicio.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableEditarCorreoEmpresaServicio.setSelectionForeground(new java.awt.Color(0, 0, 0));
+        jTableEditarCorreoEmpresaServicio.getTableHeader().setReorderingAllowed(false);
         jTableEditarCorreoEmpresaServicio.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTableEditarCorreoEmpresaServicioMouseClicked(evt);
@@ -1092,7 +1137,7 @@ public class Vista extends javax.swing.JFrame {
             jPanelEditarCuerpoCorreoEmpresaServicioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEditarCuerpoCorreoEmpresaServicioLayout.createSequentialGroup()
                 .addGap(22, 22, 22)
-                .addComponent(jPanelEditarCorreoEmpresaServicio, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                .addComponent(jPanelEditarCorreoEmpresaServicio, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPaneEditarCorreoEmpresaServicio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(21, 21, 21))
@@ -1115,17 +1160,37 @@ public class Vista extends javax.swing.JFrame {
                 .addGroup(jPanelEditarCuerpoCorreoEmpresaServicioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jScrollPaneEditarCorreoEmpresaServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(jPanelEditarCorreoEmpresaServicio, javax.swing.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanelCorreoEmpresaServicioEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(23, 23, 23))
         );
 
         jPanelEditarCuerpo.add(jPanelEditarCuerpoCorreoEmpresaServicio, "CorreoEmpresaServicio");
 
-        jLabelFTP.setText("FTP");
+        jPanelEditarCuerpoFTP.setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanelCorreoFTPEnvio.setBackground(new java.awt.Color(255, 255, 255));
-        jPanelCorreoFTPEnvio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Reintentar enviar los archivos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 16), java.awt.Color.darkGray)); // NOI18N
+        jLabelFTPServidor.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelFTPServidor.setText("Servidor: ");
+
+        jTextFieldFTPServidor.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+
+        jLabelFTPDirectorio.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelFTPDirectorio.setText("Carpeta: ");
+
+        jTextFieldFTPDirectorio.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+
+        jLabelFTPUsuario.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelFTPUsuario.setText("Usiario: ");
+
+        jTextFieldUsuario.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+
+        jLabelFTPClave.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        jLabelFTPClave.setText("Contraseña: ");
+
+        jTextFieldClave.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+
+        jPanelFTPEnvio.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelFTPEnvio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Reintentar enviar los archivos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 16), java.awt.Color.darkGray)); // NOI18N
 
         jButtonReintentarFTP.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
         jButtonReintentarFTP.setForeground(new java.awt.Color(227, 30, 48));
@@ -1139,48 +1204,77 @@ public class Vista extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanelCorreoFTPEnvioLayout = new javax.swing.GroupLayout(jPanelCorreoFTPEnvio);
-        jPanelCorreoFTPEnvio.setLayout(jPanelCorreoFTPEnvioLayout);
-        jPanelCorreoFTPEnvioLayout.setHorizontalGroup(
-            jPanelCorreoFTPEnvioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelCorreoFTPEnvioLayout.createSequentialGroup()
-                .addGap(48, 48, 48)
+        javax.swing.GroupLayout jPanelFTPEnvioLayout = new javax.swing.GroupLayout(jPanelFTPEnvio);
+        jPanelFTPEnvio.setLayout(jPanelFTPEnvioLayout);
+        jPanelFTPEnvioLayout.setHorizontalGroup(
+            jPanelFTPEnvioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelFTPEnvioLayout.createSequentialGroup()
+                .addGap(50, 50, 50)
                 .addComponent(jButtonReintentarFTP)
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
-        jPanelCorreoFTPEnvioLayout.setVerticalGroup(
-            jPanelCorreoFTPEnvioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelCorreoFTPEnvioLayout.createSequentialGroup()
+        jPanelFTPEnvioLayout.setVerticalGroup(
+            jPanelFTPEnvioLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelFTPEnvioLayout.createSequentialGroup()
                 .addContainerGap(12, Short.MAX_VALUE)
                 .addComponent(jButtonReintentarFTP, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        jLabelFTPAyuda.setFont(new java.awt.Font("Arial", 1, 13)); // NOI18N
+        jLabelFTPAyuda.setForeground(new java.awt.Color(51, 51, 51));
+        jLabelFTPAyuda.setText("FTP");
 
         javax.swing.GroupLayout jPanelEditarCuerpoFTPLayout = new javax.swing.GroupLayout(jPanelEditarCuerpoFTP);
         jPanelEditarCuerpoFTP.setLayout(jPanelEditarCuerpoFTPLayout);
         jPanelEditarCuerpoFTPLayout.setHorizontalGroup(
             jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
-                .addGap(104, 104, 104)
-                .addComponent(jLabelFTP)
-                .addContainerGap(824, Short.MAX_VALUE))
-            .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
-                    .addGap(334, 334, 334)
-                    .addComponent(jPanelCorreoFTPEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(334, Short.MAX_VALUE)))
+                .addGap(25, 25, 25)
+                .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanelFTPEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
+                        .addComponent(jLabelFTPServidor)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTextFieldFTPServidor, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
+                        .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabelFTPDirectorio)
+                            .addComponent(jLabelFTPUsuario)
+                            .addComponent(jLabelFTPClave))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jTextFieldUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jTextFieldFTPDirectorio, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jTextFieldClave, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
+                .addComponent(jLabelFTPAyuda, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(192, Short.MAX_VALUE))
         );
         jPanelEditarCuerpoFTPLayout.setVerticalGroup(
             jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
-                .addGap(72, 72, 72)
-                .addComponent(jLabelFTP)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanelEditarCuerpoFTPLayout.createSequentialGroup()
-                    .addGap(125, 125, 125)
-                    .addComponent(jPanelCorreoFTPEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(125, Short.MAX_VALUE)))
+                .addGap(28, 28, 28)
+                .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldFTPServidor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelFTPServidor)
+                    .addComponent(jLabelFTPAyuda))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldFTPDirectorio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelFTPDirectorio))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelFTPUsuario))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jTextFieldClave, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelFTPClave))
+                .addGap(35, 35, 35)
+                .addComponent(jPanelFTPEnvio, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(39, Short.MAX_VALUE))
         );
 
         jPanelEditarCuerpo.add(jPanelEditarCuerpoFTP, "FTP");
@@ -1299,7 +1393,7 @@ public class Vista extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTableContingenciaServicio.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableContingenciaServicio.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableContingenciaServicio.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPaneContingenciaServicio.setViewportView(jTableContingenciaServicio);
 
@@ -1355,7 +1449,7 @@ public class Vista extends javax.swing.JFrame {
                 .addComponent(jScrollPaneContingenciaCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonContingenciaGenerarEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(26, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanelContingenciaLayout = new javax.swing.GroupLayout(jPanelContingencia);
@@ -1363,7 +1457,7 @@ public class Vista extends javax.swing.JFrame {
         jPanelContingenciaLayout.setHorizontalGroup(
             jPanelContingenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelContingenciaLayout.createSequentialGroup()
-                .addGap(87, 87, 87)
+                .addGap(54, 54, 54)
                 .addGroup(jPanelContingenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jScrollPaneContingenciaServicio, javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelContingenciaLayout.createSequentialGroup()
@@ -1373,7 +1467,7 @@ public class Vista extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(jPanelContingenciaReporte, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanelContingenciaEnvio, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 107, Short.MAX_VALUE))
+                .addGap(0, 113, Short.MAX_VALUE))
         );
         jPanelContingenciaLayout.setVerticalGroup(
             jPanelContingenciaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1415,6 +1509,13 @@ public class Vista extends javax.swing.JFrame {
         jLabelEmpresaIBS.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelEmpresaIBS.setText("IBS: ");
 
+        jScrollPaneEmpresaCorreo.setBackground(new java.awt.Color(255, 255, 255));
+        jScrollPaneEmpresaCorreo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Correos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 15), java.awt.Color.darkGray)); // NOI18N
+        jScrollPaneEmpresaCorreo.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
+
+        jTextPaneEmpresaCorreo.setEditable(false);
+        jScrollPaneEmpresaCorreo.setViewportView(jTextPaneEmpresaCorreo);
+
         jScrollPaneEmpresaServicio.setBackground(new java.awt.Color(255, 255, 255));
         jScrollPaneEmpresaServicio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Servicios", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 15), java.awt.Color.darkGray)); // NOI18N
         jScrollPaneEmpresaServicio.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
@@ -1442,8 +1543,9 @@ public class Vista extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jTableEmpresaServicio.setSelectionBackground(new java.awt.Color(255, 255, 204));
+        jTableEmpresaServicio.setSelectionBackground(new java.awt.Color(204, 204, 204));
         jTableEmpresaServicio.setSelectionForeground(new java.awt.Color(0, 0, 0));
+        jTableEmpresaServicio.getTableHeader().setReorderingAllowed(false);
         jTableEmpresaServicio.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTableEmpresaServicioMouseClicked(evt);
@@ -1454,13 +1556,6 @@ public class Vista extends javax.swing.JFrame {
             jTableEmpresaServicio.getColumnModel().getColumn(0).setPreferredWidth(10);
             jTableEmpresaServicio.getColumnModel().getColumn(1).setPreferredWidth(90);
         }
-
-        jScrollPaneEmpresaCorreo.setBackground(new java.awt.Color(255, 255, 255));
-        jScrollPaneEmpresaCorreo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Correos", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 15), java.awt.Color.darkGray)); // NOI18N
-        jScrollPaneEmpresaCorreo.setFont(new java.awt.Font("Arial", 0, 13)); // NOI18N
-
-        jTextPaneEmpresaCorreo.setEditable(false);
-        jScrollPaneEmpresaCorreo.setViewportView(jTextPaneEmpresaCorreo);
 
         jPanelEmpresaInformacion.setBackground(new java.awt.Color(255, 255, 255));
         jPanelEmpresaInformacion.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Información", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 15), java.awt.Color.darkGray)); // NOI18N
@@ -1521,7 +1616,7 @@ public class Vista extends javax.swing.JFrame {
         jPanelEmpresaLayout.setHorizontalGroup(
             jPanelEmpresaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelEmpresaLayout.createSequentialGroup()
-                .addGap(60, 60, 60)
+                .addGap(55, 55, 55)
                 .addGroup(jPanelEmpresaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanelEmpresaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelEmpresaLayout.createSequentialGroup()
@@ -1534,7 +1629,7 @@ public class Vista extends javax.swing.JFrame {
                         .addComponent(jPanelEmpresaInformacion, javax.swing.GroupLayout.PREFERRED_SIZE, 315, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPaneEmpresaCorreo, javax.swing.GroupLayout.PREFERRED_SIZE, 433, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addContainerGap(110, Short.MAX_VALUE))
         );
         jPanelEmpresaLayout.setVerticalGroup(
             jPanelEmpresaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1549,7 +1644,7 @@ public class Vista extends javax.swing.JFrame {
                     .addComponent(jPanelEmpresaInformacion, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(33, 33, 33)
                 .addComponent(jScrollPaneEmpresaServicio, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(80, Short.MAX_VALUE))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
 
         jPanelCuerpo.add(jPanelEmpresa, "Empresa");
@@ -1560,99 +1655,192 @@ public class Vista extends javax.swing.JFrame {
         jPanelAyuda.setLayout(jPanelAyudaLayout);
         jPanelAyudaLayout.setHorizontalGroup(
             jPanelAyudaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 958, Short.MAX_VALUE)
+            .addGap(0, 931, Short.MAX_VALUE)
         );
         jPanelAyudaLayout.setVerticalGroup(
             jPanelAyudaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 616, Short.MAX_VALUE)
+            .addGap(0, 615, Short.MAX_VALUE)
         );
 
         jPanelCuerpo.add(jPanelAyuda, "Ayuda");
 
         jPanelConfiguracion.setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanelConfiguracionInfo.setLayout(new java.awt.GridLayout(6, 2));
+        jPanelConfiguracionInfo.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelConfiguracionInfo.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Variables de configuración", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 16), java.awt.Color.darkGray)); // NOI18N
 
-        jLabelTextConfiguracionConexion.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionConexion.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionConexion.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabelTextConfiguracionConexion.setText("Conexion: ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionConexion);
+        jLabelTextConfiguracionConexion.setText("Conexión: ");
 
-        jLabelConfiguracionConexion.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionConexion.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionConexion.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionConexion.setText("Conexion");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionConexion);
 
-        jLabelTextConfiguracionUsuario.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionUsuario.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionUsuario.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelTextConfiguracionUsuario.setText("Usuario: ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionUsuario);
 
-        jLabelConfiguracionUsuario.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionUsuario.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionUsuario.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionUsuario.setText("Usuario");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionUsuario);
 
-        jLabelTextConfiguracionDirectorioInterno.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionDirectorioInterno.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionDirectorioInterno.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelTextConfiguracionDirectorioInterno.setText("Directorio Interno: ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionDirectorioInterno);
 
-        jLabelConfiguracionDirectorioInterno.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionDirectorioInterno.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionDirectorioInterno.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionDirectorioInterno.setText("Directorio Interno");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionDirectorioInterno);
 
-        jLabelTextConfiguracionTiempo.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionTiempo.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionTiempo.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelTextConfiguracionTiempo.setText("Tiempo: ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionTiempo);
 
-        jLabelConfiguracionTiempo.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionTiempo.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionTiempo.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionTiempo.setText("Tiempo");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionTiempo);
 
-        jLabelTextConfiguracionProducto.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionProducto.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionProducto.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelTextConfiguracionProducto.setText("Producto Notificación:  ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionProducto);
 
-        jLabelConfiguracionProducto.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionProducto.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionProducto.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionProducto.setText("Producto");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionProducto);
 
-        jLabelTextConfiguracionDirectorioExterno.setFont(new java.awt.Font("Arial", 1, 12)); // NOI18N
+        jLabelTextConfiguracionDirectorioExterno.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         jLabelTextConfiguracionDirectorioExterno.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         jLabelTextConfiguracionDirectorioExterno.setText("Directorio Externo: ");
-        jPanelConfiguracionInfo.add(jLabelTextConfiguracionDirectorioExterno);
 
-        jLabelConfiguracionDirectorioExterno.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        jLabelConfiguracionDirectorioExterno.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabelConfiguracionDirectorioExterno.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelConfiguracionDirectorioExterno.setText("Directorio Externo");
-        jPanelConfiguracionInfo.add(jLabelConfiguracionDirectorioExterno);
+
+        javax.swing.GroupLayout jPanelConfiguracionInfoLayout = new javax.swing.GroupLayout(jPanelConfiguracionInfo);
+        jPanelConfiguracionInfo.setLayout(jPanelConfiguracionInfoLayout);
+        jPanelConfiguracionInfoLayout.setHorizontalGroup(
+            jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelConfiguracionInfoLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelConfiguracionInfoLayout.createSequentialGroup()
+                        .addComponent(jLabelTextConfiguracionProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabelConfiguracionProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(229, 229, 229))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelConfiguracionInfoLayout.createSequentialGroup()
+                        .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelConfiguracionInfoLayout.createSequentialGroup()
+                                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabelTextConfiguracionUsuario, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jLabelTextConfiguracionConexion, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelConfiguracionConexion, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabelConfiguracionUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelConfiguracionInfoLayout.createSequentialGroup()
+                                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jLabelTextConfiguracionDirectorioExterno)
+                                    .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(jLabelTextConfiguracionDirectorioInterno, javax.swing.GroupLayout.DEFAULT_SIZE, 166, Short.MAX_VALUE)
+                                        .addComponent(jLabelTextConfiguracionTiempo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelConfiguracionDirectorioInterno, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabelConfiguracionTiempo, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabelConfiguracionDirectorioExterno, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGap(231, 231, 231))))
+        );
+        jPanelConfiguracionInfoLayout.setVerticalGroup(
+            jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelConfiguracionInfoLayout.createSequentialGroup()
+                .addContainerGap(17, Short.MAX_VALUE)
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionConexion, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionConexion, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionDirectorioInterno, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionDirectorioInterno, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionDirectorioExterno, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionDirectorioExterno, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionTiempo, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionTiempo, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanelConfiguracionInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabelTextConfiguracionProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabelConfiguracionProducto, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+
+        jPanelConfiguracionDoc.setBackground(new java.awt.Color(255, 255, 255));
+        jPanelConfiguracionDoc.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Documentación", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Arial", 1, 16), java.awt.Color.darkGray)); // NOI18N
+
+        jLabel2.setText("Repositorio: https://github.com/em10029/ReporteAtlantidaManual.git");
+
+        jLabel3.setText("Versión: V.1.1");
+
+        jLabel4.setText("Javadoc: https://em10029.github.io/DocReporteAtlantida");
+
+        jLabel5.setText("Manual de usuario: ");
+
+        javax.swing.GroupLayout jPanelConfiguracionDocLayout = new javax.swing.GroupLayout(jPanelConfiguracionDoc);
+        jPanelConfiguracionDoc.setLayout(jPanelConfiguracionDocLayout);
+        jPanelConfiguracionDocLayout.setHorizontalGroup(
+            jPanelConfiguracionDocLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelConfiguracionDocLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(jPanelConfiguracionDocLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel5))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanelConfiguracionDocLayout.setVerticalGroup(
+            jPanelConfiguracionDocLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelConfiguracionDocLayout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel4)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel3)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
 
         javax.swing.GroupLayout jPanelConfiguracionLayout = new javax.swing.GroupLayout(jPanelConfiguracion);
         jPanelConfiguracion.setLayout(jPanelConfiguracionLayout);
         jPanelConfiguracionLayout.setHorizontalGroup(
             jPanelConfiguracionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelConfiguracionLayout.createSequentialGroup()
-                .addGap(59, 59, 59)
-                .addComponent(jPanelConfiguracionInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 691, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(208, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanelConfiguracionLayout.createSequentialGroup()
+                .addContainerGap(112, Short.MAX_VALUE)
+                .addGroup(jPanelConfiguracionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jPanelConfiguracionDoc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanelConfiguracionInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 719, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(100, 100, 100))
         );
         jPanelConfiguracionLayout.setVerticalGroup(
             jPanelConfiguracionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanelConfiguracionLayout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jPanelConfiguracionInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(420, Short.MAX_VALUE))
+                .addGap(28, 28, 28)
+                .addComponent(jPanelConfiguracionInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jPanelConfiguracionDoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(126, Short.MAX_VALUE))
         );
 
         jPanelCuerpo.add(jPanelConfiguracion, "Configuracion");
 
-        jPanelContenedor.add(jPanelCuerpo, java.awt.BorderLayout.CENTER);
+        getContentPane().add(jPanelCuerpo, java.awt.BorderLayout.CENTER);
 
         fileMenu.setMnemonic('f');
         fileMenu.setText("Menu");
@@ -1695,17 +1883,6 @@ public class Vista extends javax.swing.JFrame {
 
         setJMenuBar(menuBar);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelContenedor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanelContenedor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
@@ -1731,10 +1908,6 @@ public class Vista extends javax.swing.JFrame {
     private void jButtonEmpresaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonEmpresaMouseClicked
         this.cambiarPanel("Empresa");
     }//GEN-LAST:event_jButtonEmpresaMouseClicked
-
-    private void jButtonAyudaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAyudaMouseClicked
-        this.cambiarPanel("Ayuda");
-    }//GEN-LAST:event_jButtonAyudaMouseClicked
 
     private void jButtonConfiguracionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonConfiguracionMouseClicked
         this.cambiarPanel("Configuracion");
@@ -1895,7 +2068,15 @@ public class Vista extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonReintentarCorreoEmpresaServicioMouseClicked
 
     private void jButtonReintentarFTPMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonReintentarFTPMouseClicked
-        // TODO add your handling code here:
+        //Verificar estado
+        if (this.reporteRef.getEstado().equals("F")) {
+            this.reporteRef.getEmpresa().setUrl(this.jTextFieldFTPServidor.getText().trim());
+            this.reporteRef.getEmpresa().setDirectorio(this.jTextFieldFTPDirectorio.getText().trim());
+            this.reporteRef.getEmpresa().setUser(this.jTextFieldUsuario.getText().trim());
+            this.reporteRef.getEmpresa().setPassword(this.jTextFieldClave.getText().trim());            
+            this.reporteRef.getEmpresa().setCorreos(this.jTextAreaEditarCorreoEmpresaServicio.getText());
+            this.reenviar();
+        }
     }//GEN-LAST:event_jButtonReintentarFTPMouseClicked
 
     private void jComboEmpresaBoxEmpresaItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboEmpresaBoxEmpresaItemStateChanged
@@ -1929,6 +2110,10 @@ public class Vista extends javax.swing.JFrame {
         }
 
     }//GEN-LAST:event_jTableEmpresaServicioMouseClicked
+
+    private void jButtonAyudaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jButtonAyudaMouseClicked
+        //this.cambiarPanel("Ayuda");
+    }//GEN-LAST:event_jButtonAyudaMouseClicked
 
     /**
      ************************************************************************
@@ -2073,6 +2258,7 @@ public class Vista extends javax.swing.JFrame {
         }
 
         //****Encabezado***//
+        this.jLabelEditarPeticion.setText(reporte.toString());
         this.jLabelEditarEmpresa.setText(empresa.getNombre());
         this.jLabelEditarDestino.setText(destino);
         this.jLabelEditarEnvio.setText(envio);
@@ -2125,7 +2311,7 @@ public class Vista extends javax.swing.JFrame {
                 servicio.toString(),
                 servicio.getDescripcion(),
                 servicio.getCorreos(),
-                servicio.getEstadoEnvio(),
+                servicio.getEstadoEnvio().equals("A"),
                 editar
             };
 
@@ -2180,8 +2366,30 @@ public class Vista extends javax.swing.JFrame {
         }
     }
 
-    private void editarReporteFTP(Reporte reporte) {
-
+    private void editarReporteFTP(Reporte reporte) {        
+        
+        Empresa empresa = reporte.getEmpresa();
+        
+        this.jTextFieldFTPServidor.setText(reporte.getEmpresa().getUrl());
+        this.jTextFieldFTPDirectorio.setText(reporte.getEmpresa().getDirectorio());
+        this.jTextFieldUsuario.setText(reporte.getEmpresa().getUser());
+        this.jTextFieldClave.setText(reporte.getEmpresa().getPassword());
+        
+        try {
+            String ipFormato = FTP.getIPFormato(empresa.getUrl());            
+            String ip = Arrays.toString(FTP.getIP(ipFormato));
+            String ayuda = "IP formato: " + ipFormato + " - IP Byte: " + ip;
+            this.jLabelFTPAyuda.setText(ayuda);
+        } catch (ReporteAtlantidaExcepcion ex) {
+            Logger.getLogger(Vista.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if(reporte.getEstado().equals("F")){
+            this.jButtonReintentarFTP.setEnabled(true);
+        }else{
+            this.jButtonReintentarFTP.setEnabled(false);
+        }
+        
     }
 
     /**
@@ -2461,9 +2669,7 @@ public class Vista extends javax.swing.JFrame {
 
         JOptionPane.showMessageDialog(this, mensaje, info, JOptionPane.INFORMATION_MESSAGE);
 
-        String infor = reporte.atlantida.utilitario.Util.info(this.reporteRef);
-        System.out.println(infor);
-
+        Controlador.registrarProceso(this.reporteRef); //Registra el proceso en el log
     }
 
     /**
@@ -2531,6 +2737,10 @@ public class Vista extends javax.swing.JFrame {
     private com.toedter.calendar.JDateChooser jDateChooserContingenciaHasta;
     private javax.swing.JLabel jLabeTextInformacion;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabelConcepto;
     private javax.swing.JLabel jLabelConfiguracionConexion;
     private javax.swing.JLabel jLabelConfiguracionDirectorioExterno;
@@ -2546,6 +2756,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelEditarDestino;
     private javax.swing.JLabel jLabelEditarEmpresa;
     private javax.swing.JLabel jLabelEditarEnvio;
+    private javax.swing.JLabel jLabelEditarPeticion;
     private javax.swing.JLabel jLabelEmpresaConcepto;
     private javax.swing.JLabel jLabelEmpresaIBS;
     private javax.swing.JLabel jLabelEmpresaNivelPago;
@@ -2553,7 +2764,11 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelEmpresaVersionPago;
     private javax.swing.JLabel jLabelEmpresaVersionSaldo;
     private javax.swing.JLabel jLabelEstado;
-    private javax.swing.JLabel jLabelFTP;
+    private javax.swing.JLabel jLabelFTPAyuda;
+    private javax.swing.JLabel jLabelFTPClave;
+    private javax.swing.JLabel jLabelFTPDirectorio;
+    private javax.swing.JLabel jLabelFTPServidor;
+    private javax.swing.JLabel jLabelFTPUsuario;
     private javax.swing.JLabel jLabelFechas;
     private javax.swing.JLabel jLabelGeneracion;
     private javax.swing.JLabel jLabelIBS;
@@ -2572,6 +2787,7 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelTextDestino;
     private javax.swing.JLabel jLabelTextEditarDestino;
     private javax.swing.JLabel jLabelTextEditarEnvio;
+    private javax.swing.JLabel jLabelTextEditarPeticion;
     private javax.swing.JLabel jLabelTextEmpresaConcepto;
     private javax.swing.JLabel jLabelTextEmpresaNivelPago;
     private javax.swing.JLabel jLabelTextEmpresaNivelSaldo;
@@ -2590,8 +2806,8 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JLabel jLabelVersion;
     private javax.swing.JPanel jPanelAyuda;
     private javax.swing.JPanel jPanelConfiguracion;
+    private javax.swing.JPanel jPanelConfiguracionDoc;
     private javax.swing.JPanel jPanelConfiguracionInfo;
-    private javax.swing.JPanel jPanelContenedor;
     private javax.swing.JPanel jPanelContingencia;
     private javax.swing.JPanel jPanelContingenciaArchivo;
     private javax.swing.JPanel jPanelContingenciaEmpresa;
@@ -2602,7 +2818,6 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JPanel jPanelCorreoDefinidoEnvio;
     private javax.swing.JPanel jPanelCorreoDefinidoLista;
     private javax.swing.JPanel jPanelCorreoEmpresaServicioEnvio;
-    private javax.swing.JPanel jPanelCorreoFTPEnvio;
     private javax.swing.JPanel jPanelCorreoServicioEnvio;
     private javax.swing.JPanel jPanelCuerpo;
     private javax.swing.JPanel jPanelDescripsion;
@@ -2619,11 +2834,14 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JPanel jPanelEmpresaComboBox;
     private javax.swing.JPanel jPanelEmpresaInformacion;
     private javax.swing.JPanel jPanelEncabezado;
+    private javax.swing.JPanel jPanelFTPEnvio;
     private javax.swing.JPanel jPanelLogo;
     private javax.swing.JPanel jPanelMenu;
     private javax.swing.JPanel jPanelReporte;
     private javax.swing.JPanel jPanelVer;
     private javax.swing.JPanel jPanelVerArchivo;
+    private javax.swing.JPanel jPanelVerCuerpo;
+    private javax.swing.JPanel jPanelVerEncabezado;
     private javax.swing.JPanel jPanelVerInfo;
     private javax.swing.JRadioButton jRadioButtonContingenciaEnvioEmpresa;
     private javax.swing.JRadioButton jRadioButtonContingenciaEnvioUsuario;
@@ -2655,6 +2873,10 @@ public class Vista extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextAreaContingenciaCorreo;
     private javax.swing.JTextArea jTextAreaEditarCorreoEmpresaServicio;
     private javax.swing.JTextArea jTextAreaEditarCuerpoCorreo;
+    private javax.swing.JTextField jTextFieldClave;
+    private javax.swing.JTextField jTextFieldFTPDirectorio;
+    private javax.swing.JTextField jTextFieldFTPServidor;
+    private javax.swing.JTextField jTextFieldUsuario;
     private javax.swing.JTextPane jTextPaneEmpresaCorreo;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenuItem reporteMenuItem;

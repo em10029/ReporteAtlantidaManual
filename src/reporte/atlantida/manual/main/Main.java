@@ -27,9 +27,11 @@ public class Main {
      * @throws reporte.atlantida.estructura.ReporteAtlantidaExcepcion
      */
     public static void main(String[] args) throws ReporteAtlantidaExcepcion {
-
+        System.out.println("Aqui1");
+        
         Controlador.configurar();
-
+        System.out.println("Aqui2");
+        
         //--------- VISTA -------------//        
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -62,9 +64,13 @@ public class Main {
                 vista.setVisible(true);
             }
         });
-
+        
+        System.out.println("Aqui3");
+        
         //--------- CONTROLADOR -------------//
         Controlador controlador = new Controlador(vista);
+        
+        System.out.println("Aqui4");
 
     }
 

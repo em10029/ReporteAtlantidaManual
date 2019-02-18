@@ -31,9 +31,21 @@ public class DialogoServicio extends java.awt.Dialog {
      */
     public DialogoServicio(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        
         initComponents();
+        
+        //Modelos
         this.modeloIdentificador = (DefaultTableModel) jTableIdentificador.getModel();
         this.modeloConcepto = (DefaultTableModel) jTableConcepto.getModel();
+        
+        //Renderizacion        
+        Render render = new Render(0, "null", false); //Default
+        
+        //******************* Tabla Identificador *******************//
+        this.jTableIdentificador.setDefaultRenderer(Object.class, render);
+        
+        //******************* Tabla Concepto *******************//
+        this.jTableConcepto.setDefaultRenderer(Object.class, render);
     }
 
     /**
@@ -81,6 +93,8 @@ public class DialogoServicio extends java.awt.Dialog {
                 return canEdit [columnIndex];
             }
         });
+        jTableConcepto.setSelectionBackground(new java.awt.Color(204, 204, 204));
+        jTableConcepto.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPaneConcepto.setViewportView(jTableConcepto);
 
         jLabelServicio.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
@@ -108,6 +122,8 @@ public class DialogoServicio extends java.awt.Dialog {
                 return canEdit [columnIndex];
             }
         });
+        jTableIdentificador.setSelectionBackground(new java.awt.Color(204, 204, 204));
+        jTableIdentificador.setSelectionForeground(new java.awt.Color(0, 0, 0));
         jScrollPaneIdentificador.setViewportView(jTableIdentificador);
 
         javax.swing.GroupLayout jPanelContenedorLayout = new javax.swing.GroupLayout(jPanelContenedor);
@@ -166,6 +182,7 @@ public class DialogoServicio extends java.awt.Dialog {
     }//GEN-LAST:event_closeDialog
 
     public void visualizar(Empresa empresa, Servicio servicio) {
+        
         Util.limpiarTabla(this.modeloIdentificador);
         Util.limpiarTabla(this.modeloConcepto);
 

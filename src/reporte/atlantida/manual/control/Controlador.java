@@ -21,9 +21,11 @@ import reporte.atlantida.estructura.Reporte;
 import reporte.atlantida.estructura.ReporteAtlantidaExcepcion;
 import reporte.atlantida.manual.vista.Vista;
 import reporte.atlantida.utilitario.Configuracion;
+import reporte.atlantida.utilitario.Util;
 
 /**
  *
+ * 
  * @author Erick Fabricio Martínez Castellanos
  * (<a href='mailto:efmartinez@bancatlan.hn'>efmartinez@bancatlan.hn</a>)
  * @version 1.0 31-ene-2019
@@ -57,6 +59,16 @@ public class Controlador {
         }
         return config;
     }
+    
+    /**
+     * Registra en el archivo log, el proceso de petición.
+     * @param reporte 
+     */
+    public static void registrarProceso(Reporte reporte){
+        String info = Util.info(reporte);
+        System.out.println(info);
+        Control.registrarProceso(info);
+    }
 
     //********************************************************************************//
     /**
@@ -86,8 +98,8 @@ public class Controlador {
             try {
                 Runtime garbage = Runtime.getRuntime();
                 garbage.gc();
-                System.out.println("Espera... Tiempo: " + Configuracion.CONTROL_TIEMPO + " minutos");
-                Thread.sleep(Configuracion.CONTROL_TIEMPO * 5000); //Pausa en milisegundos
+                //System.out.println("Espera... Tiempo: " + Configuracion.CONTROL_TIEMPO + " minutos");
+                Thread.sleep(Configuracion.CONTROL_TIEMPO * 60000); //Pausa en milisegundos
             } catch (InterruptedException ex) {
                 Logger.getLogger(reporte.atlantida.control.Control.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -120,15 +132,16 @@ public class Controlador {
                         //Contruir peticion de reporte                                                
                         Reporte reporte = Control.getReporte(rs); //Obtiene la estructura de la peticion
                         this.vista.reportes.put(key, reporte); //Agregandolo al diccionario
-
-                        
-                        
+                                                
                         //***********************************************
                         this.vista.agregarReporte(reporte); //Agregandolo a la tabla                        
                         //***********************************************
 
+                        //***********************************************
                         //Procesar peticion 
-                        Proceso.procesar(Control.conexion, reporte); //??? Se quita
+                        Proceso.procesar(Control.conexion, reporte); 
+                        registrarProceso(reporte);
+                        //***********************************************
                         
                         //***********************************************
                         this.vista.actualizarReporte(reporte); //Actualiza la tabla despues del proceso                        
