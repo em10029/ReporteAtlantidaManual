@@ -1249,8 +1249,8 @@ public class Vista extends javax.swing.JFrame {
                                 .addComponent(jTextFieldFTPDirectorio, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jTextFieldClave, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(18, 18, 18)
-                .addComponent(jLabelFTPAyuda, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(192, Short.MAX_VALUE))
+                .addComponent(jLabelFTPAyuda, javax.swing.GroupLayout.PREFERRED_SIZE, 452, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(33, Short.MAX_VALUE))
         );
         jPanelEditarCuerpoFTPLayout.setVerticalGroup(
             jPanelEditarCuerpoFTPLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2658,6 +2658,11 @@ public class Vista extends javax.swing.JFrame {
 
             } else { //Servidor de archivos
                 //Servidor FTP
+                if (this.reporteRef.getEstado().equals("A")) {
+                    mensaje = "Archivos enviados con éxito.";
+                } else {
+                    mensaje = "Envío fallido";
+                }
             }
         } else //N: Correo electronico, otros correos
         //Una notificacion       
